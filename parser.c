@@ -1,5 +1,7 @@
 #include "ksh.h"
 
+#include <ctype.h>
+
 char* input_string(FILE* fp, size_t size) {
     int buf_size = BUF_SIZE;
     int pos = 0;
@@ -36,35 +38,33 @@ char* input_string(FILE* fp, size_t size) {
     return buffer;
 }
 
-char** split_args(char* input) {
-    int buf_size = TOKEN_BUF_SIZE;
-    int pos = 0;
-    char** args = malloc(buf_size * sizeof(char*));
-    char* token;
+char **split_args(char *input) {
+    char **args = malloc(TOKEN_BUF_SIZE * sizeof(char *));
+    int arg_index = 0;
 
-    if (!args) {
-        fprintf(stderr, "split_args: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
+    const char *p = input;
+    while (*p) {
+        while (isspace(*p)) p++;
+        if (*p == '\0') break;
 
-    token = strtok(input, TOKEN_DELIM);
-    while (token != NULL) {
-        args[pos] = token;
-        pos++;
+        char quote = 0;
+        const char *start = p;
+        char *token = malloc(1024);
+        int k = 0;
 
-        if (pos >= buf_size) {
-            buf_size += TOKEN_BUF_SIZE;
-            args = realloc(args, buf_size * sizeof(char*));
-            if (!args) {
-                fprintf(stderr, "split_args: allocation error\n");
-                exit(EXIT_FAILURE);
-            }
+        if (*p == '"' || *p == '\'') {
+            quote = *p++;
+            while (*p && *p != quote) token[k++] = *p++;
+            p++; // skip closing quote
+        } else {
+            while (*p && !isspace(*p)) token[k++] = *p++;
         }
 
-        token = strtok(NULL, TOKEN_DELIM);
+        token[k] = '\0';
+        args[arg_index++] = token;
     }
 
-    args[pos] = NULL;
+    args[arg_index] = NULL;
     return args;
 }
 
