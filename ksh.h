@@ -35,6 +35,9 @@ int builtin_help(char** args, shell_state_t* state);
 int builtin_exit(char** args, shell_state_t* state);
 int builtin_pwd(char** args, shell_state_t* state);
 int builtin_echo(char** args, shell_state_t* state);
+int builtin_history(char** args, shell_state_t* state);
+void append_history(char* command);
+void free_history();
 
 void shell_init(shell_state_t* state);
 void shell_mainloop(shell_state_t* state);

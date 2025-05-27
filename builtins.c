@@ -5,8 +5,13 @@ static builtin_command_t builtins[] = {
     {"help", builtin_help, "Display help information"},
     {"exit", builtin_exit, "Exit the shell"},
     {"pwd", builtin_pwd, "Print working directory"},
-    {"echo", builtin_echo, "Display text"}
+    {"echo", builtin_echo, "Display text"},
+    {"history", builtin_history, "Display history"}
 };
+
+char* history[1000];
+int cur_hist_idx = 0;
+int reached_max = 0;
 
 builtin_command_t* get_builtins(void) {
     return builtins;
@@ -88,4 +93,44 @@ int builtin_echo(char** args, shell_state_t* state) {
     }
     printf("\n");
     return 1;
+}
+
+int builtin_history(char** args, shell_state_t* state) {
+    int max_idx;
+    if (reached_max) {
+        max_idx = 1000;
+    } else {
+        max_idx = cur_hist_idx;
+    }
+    for (int i = 0; i < max_idx; i++) {
+        printf("%d %s\n", i+1, history[i]);
+    }
+    return 1;
+}
+
+void append_history(char* command) {
+    char* cmdclone = malloc(strlen(command) + 1);
+    strcpy(cmdclone, command);
+
+    if (cur_hist_idx < 1000) {
+        history[cur_hist_idx++] = cmdclone;
+    } else {
+        reached_max = 1;
+        history[0] = cmdclone;
+        cur_hist_idx = 1;
+    }
+}
+
+void free_history() {
+    int max_idx;
+    if (reached_max) {
+        max_idx = 1000;
+    } else {
+        max_idx = cur_hist_idx;
+    }
+    for (int i = 0; i < max_idx; i++) {
+        if (history[i]) {
+            free(history[i]);
+        }
+    }    
 }

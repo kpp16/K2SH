@@ -32,6 +32,8 @@ void shell_mainloop(shell_state_t* state) {
             continue;
         }
 
+        append_history(input);
+
         if (strchr(input, '|') != NULL) {
             int num_cmds;
             char*** commands = parse_pipe(&num_cmds, input);
@@ -53,7 +55,8 @@ void shell_mainloop(shell_state_t* state) {
 }
 
 void shell_cleanup(shell_state_t* state) {
-    printf("Exiting...");
+    free_history();
+    printf("Exiting...\n");
 }
 
 void update_prompt(shell_state_t* state, char* prompt, size_t size) {

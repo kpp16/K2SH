@@ -80,9 +80,16 @@ int execute_pipeline(int num_cmds, char ***commands, shell_state_t* state) {
                 close(pipes[j][1]);
             }
 
-            // printf("%s\n", commands[i][0]);
-            if (execvp(commands[i][0], commands[i]) == -1) {
-                perror("ksh: ");
+            int builtin_index = find_builtin(commands[i][0]);
+            if (builtin_index >= 0) {
+                if (execute_command(commands[i], state) <= 0) {
+                    perror("ksh: ");
+                }
+                exit(EXIT_SUCCESS);
+            } else {
+                if (execvp(commands[i][0], commands[i]) == -1) {
+                    perror("ksh: ");
+                }
             }
         }
     }
