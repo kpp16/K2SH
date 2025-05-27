@@ -35,6 +35,8 @@ make
 make release
 ```
 
+---
+
 ## 🛠 Running K2SH
 ```bash
 ./k2sh
