@@ -6,9 +6,9 @@
 #include <linux/limits.h>
 
 char* builtin_str[] = {
-    "ksh_cd",
-    "ksh_help",
-    "ksh_exit"
+    "cd",
+    "help",
+    "exit"
 };
 
 int num_builtins() {
@@ -32,7 +32,7 @@ int ksh_help(char** args) {
         fprintf(stdout, "%s\n", builtin_str[i]);
     }
 
-    fprintf(stdout, "Use man <command> to learn more about the command\n");
+    fprintf(stdout, "Use man <command> to learn more about other commands\n");
     return 1;
 }
 
@@ -153,6 +153,114 @@ int execute(char **args) {
     return launch(args);
 }
 
+
+#define NUM_CMDS 2
+char*** parse_pipe(int* num_cmds, char* line) {
+    int cur_num = NUM_CMDS;
+    char** commands = malloc(cur_num * sizeof(char*));
+    if (!commands) {
+        perror("allocation error");
+        exit(EXIT_FAILURE);
+    }
+
+    int count = 0;
+
+    char* token = strtok(line, "|");
+
+    while (token != NULL) {
+        while (*token == ' ') {
+            token++;
+        }
+
+        commands[count++] = token;
+
+        if (count >= cur_num) {
+            cur_num += NUM_CMDS;
+            commands = realloc(commands, cur_num * sizeof(char*));
+            if (!commands) {
+                perror("allocation error");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        token = strtok(NULL, "|");
+    }
+
+    *num_cmds = count;
+    char*** split_commands = malloc(cur_num * sizeof(char**));
+
+    for (int i = 0; i < count; i++) {
+        split_commands[i] = split_args(commands[i]);
+    }
+    free(commands);
+
+    return split_commands;
+}
+
+int execute_pipeline(int num_cmds, char*** commands) {
+    int pipes[num_cmds - 1][2];
+
+    for (int i = 0; i < num_cmds - 1; i++) {
+        if (pipe(pipes[i]) == -1) {
+            perror("pipe");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    for (int i = 0; i < num_cmds; i++) {
+        pid_t pid = fork();
+
+        if (pid == -1) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        } else if (pid == 0) {
+            if (i > 0) {
+                // take input from the prev pipe
+                if (dup2(pipes[i - 1][0], STDIN_FILENO) == -1) {
+                    perror("dup2 stdin");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            if (i < num_cmds - 1) {
+                // redirect the write end of the current pipe to stdout
+                if (dup2(pipes[i][1], STDOUT_FILENO) == -1) {
+                    perror("dup2 stdin");
+                    exit(EXIT_FAILURE);                    
+                }
+            }
+
+            for (int j = 0; j < num_cmds - 1; j++) {
+                close(pipes[j][0]);
+                close(pipes[j][1]);
+            }
+
+            // printf("%s\n", commands[i][0]);
+            if (execvp(commands[i][0], commands[i]) == -1) {
+                perror("ksh: ");
+            }
+        }
+        //  else {
+        //     if (i > 0) {
+        //         close(pipes[i - 1][0]);
+        //     }
+        //     if (i < num_cmds - 1) {
+        //         close(pipes[i][1]);
+        //     }
+        // }
+    }
+    for (int i = 0; i < num_cmds - 1; i++) {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }    
+
+    for (int i = 0; i < num_cmds; i++) {
+        wait(NULL);
+    }
+
+    return 1;
+}
+
 void mainloop() {
     char* input;
     char** args;
@@ -166,12 +274,25 @@ void mainloop() {
 
         fprintf(stdout, "%s >: ", cwd);
         input = input_string(stdin, 64);
-        args = split_args(input);
 
-        status = execute(args);
+        if (strchr(input, '|') != NULL) {
+            int num_cmds;
+            char*** commands = parse_pipe(&num_cmds, input);
+
+            status = execute_pipeline(num_cmds, commands);
+
+            for (int i = 0; i < num_cmds; i++) {
+                free(commands[i]);
+            }
+            free(commands);
+
+        } else {
+            args = split_args(input);
+            status = execute(args);
+            free(args);
+        }
 
         free(input);
-        free(args);
 
     } while (status);
 }
