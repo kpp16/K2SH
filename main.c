@@ -1,4 +1,4 @@
-#include "ksh.h"
+#include "k2sh.h"
 
 int main() {
     shell_state_t shell_state;

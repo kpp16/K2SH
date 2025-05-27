@@ -1,4 +1,4 @@
-#include "ksh.h"
+#include "k2sh.h"
 
 void shell_init(shell_state_t* state) {
     if (getcwd(state->cwd, sizeof(state->cwd)) == NULL) {

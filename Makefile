@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c2x
-TARGET = ksh
+TARGET = k2sh
 SRCDIR = .
 OBJDIR = obj
 

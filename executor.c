@@ -1,4 +1,4 @@
-#include "ksh.h"
+#include "k2sh.h"
 
 int execute_command(char** args, shell_state_t* state) {
     if (args[0] == NULL) {

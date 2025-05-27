@@ -1,6 +1,4 @@
-#include "ksh.h"
-
-#include <ctype.h>
+#include "k2sh.h"
 
 char* input_string(FILE* fp, size_t size) {
     int buf_size = BUF_SIZE;

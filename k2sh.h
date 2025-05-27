@@ -1,5 +1,5 @@
-#ifndef KSH_H
-#define KSH_H
+#ifndef K2SH_H
+#define K2SH_H
 
 #include <sys/wait.h>
 #include <unistd.h>

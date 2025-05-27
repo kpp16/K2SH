@@ -1,4 +1,4 @@
-#include "ksh.h"
+#include "k2sh.h"
 
 static builtin_command_t builtins[] = {
     {"cd", builtin_cd, "Change directory"},
@@ -54,7 +54,7 @@ int builtin_cd(char** args, shell_state_t* state) {
 }
 
 int builtin_help(char** args, shell_state_t* state) {
-    printf("KSH - Simple Shell\n");
+    printf("K2SH - Simple Shell\n");
     printf("Built-in commands:\n");
     
     builtin_command_t* commands = get_builtins();
