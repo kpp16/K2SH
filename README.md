@@ -1,6 +1,6 @@
 # K2SH - A Simple Unix Shell
 
-**K2SH** is a lightweight, custom-built shell implemented in C. It supports basic command execution, built-in functions, and pipelines using `|`. Designed as a minimalist yet functional shell, it's ideal for understanding how Unix-like shells work under the hood.
+**K2SH** is a lightweight, custom-built shell implemented in C. It supports basic command execution, built-in functions, and pipelines using `|`. I built this to learn how Unix-like shells work under the hood.
 
 ---
 
